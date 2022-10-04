@@ -1,0 +1,54 @@
+--Spotify Case Study
+--creating data
+CREATE table activity
+(
+user_id varchar(20),
+event_name varchar(20),
+event_date date,
+country varchar(20)
+);
+insert into activity values 
+ (1,'app-installed','2022-01-01','India')
+,(1,'app-purchase','2022-01-02','India')
+,(2,'app-installed','2022-01-01','USA')
+,(3,'app-installed','2022-01-01','USA')
+,(3,'app-purchase','2022-01-03','USA')
+,(4,'app-installed','2022-01-03','India')
+,(4,'app-purchase','2022-01-03','India')
+,(5,'app-installed','2022-01-03','SL')
+,(5,'app-purchase','2022-01-03','SL')
+,(6,'app-installed','2022-01-04','Pakistan')
+,(6,'app-purchase','2022-01-04','Pakistan');
+
+--the dataset
+select * from activity;
+
+--Question 1: find total active users each day
+select event_date,COUNT(distinct user_id) as no_of_users
+from activity 
+group by event_date;
+
+--Question 2: Find total active users each week
+select week, COUNT(distinct user_id) as weekly_act_users from (
+select *,datepart(week,event_date) as week from activity) as A
+group by week;
+
+--Question 3: date wise total number of users who made the purchase same day they installed the app
+with cte1 as(
+    select user_id,event_date,COUNT(distinct event_name) as distinct_actions
+from activity
+group by user_id,event_date)
+select event_date,COUNT(distinct user_id) from cte1
+where distinct_actions = 2
+group by event_date;
+
+-- Question 4: Percentage of paid users in india,USA and any others 
+
+with cte1 as(
+    select case when country in ('India','USA') then country else 'others' end as new_area 
+,count(distinct user_id)as paid_users from activity
+where event_name = 'app-purchase'
+group by case when country in ('India','USA') then country else 'others' end),
+cte2 as (
+select SUM(paid_users) as total_paid from cte1)
+select new_area, round(100.0 * paid_users/total_paid ,2) from cte1,cte2;
