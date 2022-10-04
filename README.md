@@ -1,4 +1,5 @@
 # Spotify-case-study
+# Analysis of Spotify users data using SQL
 
 Hi.
 
